@@ -2,6 +2,7 @@
 #include<cstdlib>
 #include<math.h>
 #include<time.h>
+#include<Windows.h>
 
 using namespace std;
 
@@ -21,7 +22,7 @@ int** NewMap() {
 	}
 	//array2记录了0-9的随机排序
 	array2[0] = array1[0];
-	int array3[9] = { 1,2,3,7,8,4,6,5,0 };
+	int array3[9] = { 1,2,0,7,8,3,6,5,4 };
 	//利用随机数列初始化地图MAP
 	int** MAP;
 	MAP = (int**)malloc(3 * sizeof(int**));
@@ -38,6 +39,7 @@ int** NewMap() {
 
 //打印地图
 void PrintMap(int** MAP) {
+	printf("———\n");
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			printf("%d ", MAP[i][j]);
@@ -201,6 +203,58 @@ bool EndAll(int** map) {
 	return true;
 }
 
+//打印完成后的移动路径（倒序）
+template<typename T>
+void PrintALL(Tree<T>& tree1, int flag, int** MAP) {
+	if (flag >= 0) {
+		do {
+			PrintMap(tree1.array[flag]._data);
+			flag = tree1.array[flag].parent;
+		} while (tree1.array[flag].parent != -1);
+		PrintMap(MAP);
+	}
+}
+
+//深度优先算法OPEN排序
+template<typename T>
+void FirstDeepOpen(Tree<T>& tree, int* open) {
+	int max = 0;
+	int flagIndex = 0;
+	for (int i = 1; i <= open[0]; i++) {
+		if (tree.array[open[i]].deep > max) {
+			max = tree.array[open[i]].deep;
+			flagIndex = i;
+		}
+	}
+	int maxID = open[flagIndex];
+	if (flagIndex != 1 && flagIndex != 0) {
+		for (int i = flagIndex; i > 1; i--) {
+			open[i] = open[i - 1];
+		}
+		open[1] = maxID;
+	}
+}
+
+//广度优先算法OPEN排序
+template<typename T>
+void FirstBreadthOpen(Tree<T>& tree, int* open) {
+	int min = 100;
+	int flagIndex = 0;
+	for (int i = 1; i <= open[0]; i++) {
+		if (tree.array[open[i]].deep < min) {
+			min = tree.array[open[i]].deep;
+			flagIndex = i;
+		}
+	}
+	int minID = open[flagIndex];
+	if (flagIndex != 1) {
+		for (int i = flagIndex; i > 1; i--) {
+			open[i] = open[i - 1];
+		}
+		open[1] = minID;
+	}
+}
+
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 //普通图搜索，-1表示false，正数表示success后的结尾index坐标
 template<typename T>
@@ -216,14 +270,66 @@ int GraphSearching(Tree<T>& tree, int* open, int* close, int deep) {
 	CloseAdd(close, index);
 	//检测是否结束排序(完成或超出最大步长限制)
 	if (EndAll(tree.array[index]._data)) {
-		printf("Do It!!!\n");
+		printf("##########\nGraph Searching Finished！\n");
 		return index;
 	}
 	//拓展open表
-	if (deep < 10) {
+	if (deep < 300) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
 	GraphSearching(tree, open, close, deep);
+}
+
+//深度优先图搜索，-1表示false，正数表示success后的结尾index坐标
+template<typename T>
+int DepthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
+	int sizeOpen = open[0];
+	deep++;
+	//检验OPEN表是否为空
+	if (sizeOpen == 0) {
+		return -1;
+	}
+	//按深度对open表排序
+	FirstDeepOpen(tree, open);
+	//执行open表和close表的增改操作
+	int index = OpenRemove(open);
+	CloseAdd(close, index);
+	//检测是否结束排序(完成或超出最大步长限制)
+	if (EndAll(tree.array[index]._data)) {
+		printf("##########\nDepth First Searching Finished！\n");
+		return index;
+	}
+	//拓展open表
+	if (deep < 300) {
+		OpenAdd(open, index, tree.array[index]._data, tree, deep);
+	}
+	DepthFirstSearching(tree, open, close, deep);
+}
+
+//广度优先图搜索，-1表示false，正数表示success后的结尾index坐标
+template<typename T>
+int BreadthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
+	int sizeOpen = open[0];
+	deep++;
+	//检验OPEN表是否为空
+	if (sizeOpen == 0) {
+		return -1;
+	}
+	//按深度对open表排序
+	FirstBreadthOpen(tree, open);
+	//执行open表和close表的增改操作
+	int index = OpenRemove(open);
+	CloseAdd(close, index);
+	//检测是否结束排序(完成或超出最大步长限制)
+	if (EndAll(tree.array[index]._data)) {
+		printf("##########\nBreadth First Searching Finished！\n");
+		return index;
+	}
+	//拓展open表
+	if (deep < 150) {
+		OpenAdd(open, index, tree.array[index]._data, tree, deep);
+	}
+	BreadthFirstSearching(tree, open, close, deep);
 }
 
 int main() {
@@ -231,6 +337,9 @@ int main() {
 	//初始化地图
 	MAP = NewMap();
 	PrintMap(MAP);
+	printf("↑初始地图↑\n");
+	//==========================================
+	//普通图搜索，上界步数为10
 	//设置Open表和Close表
 	int* open1, * close1;
 	open1 = (int*)malloc(10000 * sizeof(int*));
@@ -241,17 +350,53 @@ int main() {
 	//定义树
 	Tree<int**> tree1;
 	tree1.count = 0;
-	int deep = 0;
-	AddNode(MAP, -1, deep, tree1);
-	int flag = GraphSearching(tree1, open1, close1, deep);
-
-	if (flag >= 0) {
-		do {
-			PrintMap(tree1.array[flag]._data);
-			flag = tree1.array[flag].parent;
-		} while (tree1.array[flag].parent != -1);
-		PrintMap(MAP);
-	}
-
+	int deep1 = 0;
+	AddNode(MAP, -1, deep1, tree1);
+	double start1 = GetTickCount();
+	int flag1 = GraphSearching(tree1, open1, close1, deep1);
+	double  end1 = GetTickCount();
+	PrintALL(tree1, flag1, MAP);
+	//==========================================
+	//深度优先图搜索，上界步数为10
+	//设置Open表和Close表
+	int* open2, * close2;
+	open2 = (int*)malloc(10000 * sizeof(int*));
+	close2 = (int*)malloc(10000 * sizeof(int*));
+	open2[0] = 1;
+	open2[1] = 0;
+	close2[0] = 0;
+	//定义树
+	Tree<int**> tree2;
+	tree2.count = 0;
+	int deep2 = 0;
+	AddNode(MAP, -1, deep2, tree2);
+	double start2 = GetTickCount();
+	int flag2 = DepthFirstSearching(tree2, open2, close2, deep2);
+	double  end2 = GetTickCount();
+	PrintALL(tree2, flag2, MAP);
+	//==========================================
+	//广度优先图搜索，上界步数为10
+	//设置Open表和Close表
+	int* open3, * close3;
+	open3 = (int*)malloc(10000 * sizeof(int*));
+	close3 = (int*)malloc(10000 * sizeof(int*));
+	open3[0] = 1;
+	open3[1] = 0;
+	close3[0] = 0;
+	//定义树
+	Tree<int**> tree3;
+	tree3.count = 0;
+	int deep3 = 0;
+	AddNode(MAP, -1, deep3, tree3);
+	double start3 = GetTickCount();
+	int flag3 = BreadthFirstSearching(tree3, open3, close3, deep3);
+	double  end3 = GetTickCount();
+	PrintALL(tree3, flag3, MAP);
+	cout << "普通:" << end1 - start1 << endl;
+	cout << "深度:" << end2 - start2 << endl;
+	cout << "广度:" << end3 - start3 << endl;
+	cout << tree1.count << endl;
+	cout << tree2.count << endl;
+	cout << tree3.count << endl;
 	return 0;
 }
