@@ -5,6 +5,8 @@
 #include<Windows.h>
 
 using namespace std;
+//定义最大搜索深度
+int DEPTH = 15;
 
 //######################################
 //随机生成八数码的初始态
@@ -274,7 +276,7 @@ int GraphSearching(Tree<T>& tree, int* open, int* close) {
 	}
 	//拓展open表
 	int deep = tree.array[index].deep + 1;
-	if (deep < 10) {
+	if (deep < DEPTH) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
 	GraphSearching(tree, open, close);
@@ -288,8 +290,6 @@ int DepthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	if (sizeOpen == 0) {
 		return -1;
 	}
-	//按深度对open表排序
-	FirstDeepOpen(tree, open);
 	//执行open表和close表的增改操作
 	int index = OpenRemove(open);
 	CloseAdd(close, index);
@@ -300,9 +300,11 @@ int DepthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	}
 	//拓展open表
 	int deep = tree.array[index].deep + 1;
-	if (deep < 10) {
+	if (deep < DEPTH) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
+	//按深度对open表排序
+	FirstDeepOpen(tree, open);
 	DepthFirstSearching(tree, open, close);
 }
 
@@ -314,8 +316,6 @@ int BreadthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	if (sizeOpen == 0) {
 		return -1;
 	}
-	//按深度对open表排序
-	FirstBreadthOpen(tree, open);
 	//执行open表和close表的增改操作
 	int index = OpenRemove(open);
 	CloseAdd(close, index);
@@ -326,9 +326,11 @@ int BreadthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	}
 	//拓展open表
 	int deep = tree.array[index].deep + 1;
-	if (deep < 10) {
+	if (deep < DEPTH) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
+	//按广度对open表排序
+	FirstBreadthOpen(tree, open);
 	BreadthFirstSearching(tree, open, close);
 }
 
@@ -338,6 +340,7 @@ int main() {
 	MAP = NewMap();
 	PrintMap(MAP);
 	printf("↑初始地图↑\n");
+
 	//==========================================
 	//普通图搜索，上界步数为10
 	//设置Open表和Close表
@@ -356,6 +359,7 @@ int main() {
 	int flag1 = GraphSearching(tree1, open1, close1);
 	clock_t  end1 = clock();
 	PrintALL(tree1, flag1, MAP);
+
 	//==========================================
 	//深度优先图搜索，上界步数为10
 	//设置Open表和Close表
@@ -374,6 +378,7 @@ int main() {
 	int flag2 = DepthFirstSearching(tree2, open2, close2);
 	clock_t  end2 = clock();
 	PrintALL(tree2, flag2, MAP);
+
 	//==========================================
 	//广度优先图搜索，上界步数为10
 	//设置Open表和Close表
