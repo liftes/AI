@@ -22,7 +22,7 @@ int** NewMap() {
 	}
 	//array2记录了0-9的随机排序
 	array2[0] = array1[0];
-	int array3[9] = { 1,2,0,7,8,3,6,5,4 };
+	int array3[9] = { 0,1,2,7,8,3,6,5,4 };
 	//利用随机数列初始化地图MAP
 	int** MAP;
 	MAP = (int**)malloc(3 * sizeof(int**));
@@ -114,7 +114,7 @@ struct Node {
 };
 template<typename T>
 struct Tree {
-	Node<T> array[700];
+	Node<T> array[10000];
 	int count;
 };
 template<typename T>
@@ -247,7 +247,7 @@ void FirstBreadthOpen(Tree<T>& tree, int* open) {
 		}
 	}
 	int minID = open[flagIndex];
-	if (flagIndex != 1) {
+	if (flagIndex != 1 && flagIndex != 0) {
 		for (int i = flagIndex; i > 1; i--) {
 			open[i] = open[i - 1];
 		}
@@ -258,9 +258,8 @@ void FirstBreadthOpen(Tree<T>& tree, int* open) {
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 //普通图搜索，-1表示false，正数表示success后的结尾index坐标
 template<typename T>
-int GraphSearching(Tree<T>& tree, int* open, int* close, int deep) {
+int GraphSearching(Tree<T>& tree, int* open, int* close) {
 	int sizeOpen = open[0];
-	deep++;
 	//检验OPEN表是否为空
 	if (sizeOpen == 0) {
 		return -1;
@@ -274,17 +273,17 @@ int GraphSearching(Tree<T>& tree, int* open, int* close, int deep) {
 		return index;
 	}
 	//拓展open表
-	if (deep < 300) {
+	int deep = tree.array[index].deep + 1;
+	if (deep < 10) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
-	GraphSearching(tree, open, close, deep);
+	GraphSearching(tree, open, close);
 }
 
 //深度优先图搜索，-1表示false，正数表示success后的结尾index坐标
 template<typename T>
-int DepthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
+int DepthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	int sizeOpen = open[0];
-	deep++;
 	//检验OPEN表是否为空
 	if (sizeOpen == 0) {
 		return -1;
@@ -300,17 +299,17 @@ int DepthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
 		return index;
 	}
 	//拓展open表
-	if (deep < 300) {
+	int deep = tree.array[index].deep + 1;
+	if (deep < 10) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
-	DepthFirstSearching(tree, open, close, deep);
+	DepthFirstSearching(tree, open, close);
 }
 
 //广度优先图搜索，-1表示false，正数表示success后的结尾index坐标
 template<typename T>
-int BreadthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
+int BreadthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	int sizeOpen = open[0];
-	deep++;
 	//检验OPEN表是否为空
 	if (sizeOpen == 0) {
 		return -1;
@@ -326,10 +325,11 @@ int BreadthFirstSearching(Tree<T>& tree, int* open, int* close, int deep) {
 		return index;
 	}
 	//拓展open表
-	if (deep < 150) {
+	int deep = tree.array[index].deep + 1;
+	if (deep < 10) {
 		OpenAdd(open, index, tree.array[index]._data, tree, deep);
 	}
-	BreadthFirstSearching(tree, open, close, deep);
+	BreadthFirstSearching(tree, open, close);
 }
 
 int main() {
@@ -352,9 +352,9 @@ int main() {
 	tree1.count = 0;
 	int deep1 = 0;
 	AddNode(MAP, -1, deep1, tree1);
-	double start1 = GetTickCount();
-	int flag1 = GraphSearching(tree1, open1, close1, deep1);
-	double  end1 = GetTickCount();
+	clock_t start1 = clock();
+	int flag1 = GraphSearching(tree1, open1, close1);
+	clock_t  end1 = clock();
 	PrintALL(tree1, flag1, MAP);
 	//==========================================
 	//深度优先图搜索，上界步数为10
@@ -370,9 +370,9 @@ int main() {
 	tree2.count = 0;
 	int deep2 = 0;
 	AddNode(MAP, -1, deep2, tree2);
-	double start2 = GetTickCount();
-	int flag2 = DepthFirstSearching(tree2, open2, close2, deep2);
-	double  end2 = GetTickCount();
+	clock_t start2 = clock();
+	int flag2 = DepthFirstSearching(tree2, open2, close2);
+	clock_t  end2 = clock();
 	PrintALL(tree2, flag2, MAP);
 	//==========================================
 	//广度优先图搜索，上界步数为10
@@ -388,15 +388,12 @@ int main() {
 	tree3.count = 0;
 	int deep3 = 0;
 	AddNode(MAP, -1, deep3, tree3);
-	double start3 = GetTickCount();
-	int flag3 = BreadthFirstSearching(tree3, open3, close3, deep3);
-	double  end3 = GetTickCount();
+	clock_t start3 = clock();
+	int flag3 = BreadthFirstSearching(tree3, open3, close3);
+	clock_t  end3 = clock();
 	PrintALL(tree3, flag3, MAP);
-	cout << "普通:" << end1 - start1 << endl;
-	cout << "深度:" << end2 - start2 << endl;
-	cout << "广度:" << end3 - start3 << endl;
-	cout << tree1.count << endl;
-	cout << tree2.count << endl;
-	cout << tree3.count << endl;
+	cout << "普通-> time:" << end1 - start1 << "\t步长" << tree1.count << endl;
+	cout << "深度-> time:" << end2 - start2 << "\t步长" << tree2.count << endl;
+	cout << "广度-> time:" << end3 - start3 << "\t步长" << tree3.count << endl;
 	return 0;
 }
