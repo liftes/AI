@@ -106,6 +106,20 @@ int** Move(int index, int** MAP) {
 	return map;
 }
 
+//启发函数的代价函数（h函数）
+int InspiredMap(int** map) {
+	int count = 0;
+	int arrayEnd[9] = { 1,2,3,8,0,4,7,6,5 };
+	for (int i = 0, k = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++, k++) {
+			if (map[i][j] != arrayEnd[k]) {
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
 //#######################################
 //树结构，采用双亲表示法，便于回溯完整路径
 template<typename T>
@@ -113,6 +127,7 @@ struct Node {
 	T _data;
 	int parent;
 	int deep;
+	int flag;
 };
 template<typename T>
 struct Tree {
@@ -120,10 +135,12 @@ struct Tree {
 	int count;
 };
 template<typename T>
-void AddNode(T data, int parent, int deep, Tree<T>& tree) {
+void AddNode(T data, int parent, int deep, Tree<T>& tree, int flag = 0) {
 	tree.array[tree.count]._data = data;
 	tree.array[tree.count].parent = parent;
 	tree.array[tree.count].deep = deep;
+	//在构造结点时完成f函数的计算
+	tree.array[tree.count].flag = flag + deep;
 	tree.count++;
 }
 template<typename T>
@@ -154,22 +171,22 @@ void OpenAdd(int* open, int index, int** map, Tree<T>& tree, int deep) {
 	t3 = Move(6, map);
 	t4 = Move(8, map);
 	if (NULL != t1 && FindEqual(tree,t1)) {
-		AddNode(t1, index, deep, tree);
+		AddNode(t1, index, deep, tree, InspiredMap(t1));
 		open[0]++;
 		open[open[0]] = tree.count - 1;
 	}
 	if (NULL != t2 && FindEqual(tree, t2)) {
-		AddNode(t2, index, deep, tree);
+		AddNode(t2, index, deep, tree, InspiredMap(t2));
 		open[0]++;
 		open[open[0]] = tree.count - 1;
 	}
 	if (NULL != t3 && FindEqual(tree, t3)) {
-		AddNode(t3, index, deep, tree);
+		AddNode(t3, index, deep, tree, InspiredMap(t3));
 		open[0]++;
 		open[open[0]] = tree.count - 1;
 	}
 	if (NULL != t4 && FindEqual(tree, t4)) {
-		AddNode(t4, index, deep, tree);
+		AddNode(t4, index, deep, tree, InspiredMap(t4));
 		open[0]++;
 		open[open[0]] = tree.count - 1;
 	}
@@ -245,6 +262,26 @@ void FirstBreadthOpen(Tree<T>& tree, int* open) {
 	for (int i = 1; i <= open[0]; i++) {
 		if (tree.array[open[i]].deep < min) {
 			min = tree.array[open[i]].deep;
+			flagIndex = i;
+		}
+	}
+	int minID = open[flagIndex];
+	if (flagIndex != 1 && flagIndex != 0) {
+		for (int i = flagIndex; i > 1; i--) {
+			open[i] = open[i - 1];
+		}
+		open[1] = minID;
+	}
+}
+
+//启发式搜索的OPEN排序
+template<typename T>
+void FirstInspiredOpen(Tree<T>& tree, int* open) {
+	int min = 100;
+	int flagIndex = 0;
+	for (int i = 1; i <= open[0]; i++) {
+		if (tree.array[open[i]].flag < min) {
+			min = tree.array[open[i]].flag;
 			flagIndex = i;
 		}
 	}
@@ -334,6 +371,32 @@ int BreadthFirstSearching(Tree<T>& tree, int* open, int* close) {
 	BreadthFirstSearching(tree, open, close);
 }
 
+//启发式图搜索，-1表示false，正数表示success后的结尾index坐标
+template<typename T>
+int InspiredSearching(Tree<T>& tree, int* open, int* close) {
+	int sizeOpen = open[0];
+	//检验OPEN表是否为空
+	if (sizeOpen == 0) {
+		return -1;
+	}
+	//执行open表和close表的增改操作
+	int index = OpenRemove(open);
+	CloseAdd(close, index);
+	//检测是否结束排序(完成或超出最大步长限制)
+	if (EndAll(tree.array[index]._data)) {
+		printf("##########\nInspired Searching Finished！\n");
+		return index;
+	}
+	//拓展open表
+	int deep = tree.array[index].deep + 1;
+	if (deep < DEPTH) {
+		OpenAdd(open, index, tree.array[index]._data, tree, deep);
+	}
+	//按广度对open表排序
+	FirstInspiredOpen(tree, open);
+	InspiredSearching(tree, open, close);
+}
+
 int main() {
 	int** MAP;
 	//初始化地图
@@ -342,7 +405,7 @@ int main() {
 	printf("↑初始地图↑\n");
 
 	//==========================================
-	//普通图搜索，上界步数为10
+	//普通图搜索
 	//设置Open表和Close表
 	int* open1, * close1;
 	open1 = (int*)malloc(10000 * sizeof(int*));
@@ -361,7 +424,7 @@ int main() {
 	PrintALL(tree1, flag1, MAP);
 
 	//==========================================
-	//深度优先图搜索，上界步数为10
+	//深度优先图搜索
 	//设置Open表和Close表
 	int* open2, * close2;
 	open2 = (int*)malloc(10000 * sizeof(int*));
@@ -380,7 +443,7 @@ int main() {
 	PrintALL(tree2, flag2, MAP);
 
 	//==========================================
-	//广度优先图搜索，上界步数为10
+	//广度优先图搜索
 	//设置Open表和Close表
 	int* open3, * close3;
 	open3 = (int*)malloc(10000 * sizeof(int*));
@@ -397,8 +460,31 @@ int main() {
 	int flag3 = BreadthFirstSearching(tree3, open3, close3);
 	clock_t  end3 = clock();
 	PrintALL(tree3, flag3, MAP);
-	cout << "普通-> time:" << end1 - start1 << "\t步长" << tree1.count << endl;
-	cout << "深度-> time:" << end2 - start2 << "\t步长" << tree2.count << endl;
-	cout << "广度-> time:" << end3 - start3 << "\t步长" << tree3.count << endl;
+
+	//==========================================
+	//启发式图搜索
+	//设置Open表和Close表
+	int* open4, * close4;
+	open4 = (int*)malloc(10000 * sizeof(int*));
+	close4 = (int*)malloc(10000 * sizeof(int*));
+	open4[0] = 1;
+	open4[1] = 0;
+	close4[0] = 0;
+	//定义树
+	Tree<int**> tree4;
+	tree4.count = 0;
+	int deep4 = 0;
+	AddNode(MAP, -1, deep4, tree4, InspiredMap(MAP));
+	clock_t start4 = clock();
+	int flag4 = InspiredSearching(tree4, open4, close4);
+	clock_t  end4 = clock();
+	PrintALL(tree4, flag4, MAP);
+
+	//输出结果并比较算法性能
+	cout << "普通-> time:" << end1 - start1 << "\t步长：" << tree1.count << endl;
+	cout << "深度-> time:" << end2 - start2 << "\t步长：" << tree2.count << endl;
+	cout << "广度-> time:" << end3 - start3 << "\t步长：" << tree3.count << endl;
+	cout << "启发-> time:" << end4 - start4 << "\t步长：" << tree4.count << endl;
+
 	return 0;
 }
