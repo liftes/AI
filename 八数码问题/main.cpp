@@ -30,7 +30,7 @@ int** NewMap() {
 	MAP = (int**)malloc(3 * sizeof(int**));
 	for (int i = 0; i < 3; i++) {
 		MAP[i] = (int*)malloc(3 * sizeof(int**));
-	}
+	}  
 	for (int i = 0, k = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++, k++) {
 			MAP[i][j] = array3[k];
