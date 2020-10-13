@@ -20,7 +20,7 @@ public:
 	int F;
 	int h;
 	int deep;
-	stack<int> son;//该节点的前继节点
+	stack<int> son;//该节点的后继节点
 };
 
 PathNode* MapGet(PathNode* map) {
