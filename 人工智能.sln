@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "八数码问题", "八数�
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "迷宫问题-启发式算法", "迷宫问题-启发式算法\迷宫问题-启发式算法.vcxproj", "{A8B21D5A-33E5-4FFA-985E-29C397BE0C8E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "传教士野人问题-启发式", "传教士野人问题-启发式\传教士野人问题-启发式.vcxproj", "{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{A8B21D5A-33E5-4FFA-985E-29C397BE0C8E}.Release|x64.Build.0 = Release|x64
 		{A8B21D5A-33E5-4FFA-985E-29C397BE0C8E}.Release|x86.ActiveCfg = Release|Win32
 		{A8B21D5A-33E5-4FFA-985E-29C397BE0C8E}.Release|x86.Build.0 = Release|Win32
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Debug|x64.ActiveCfg = Debug|x64
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Debug|x64.Build.0 = Debug|x64
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Debug|x86.ActiveCfg = Debug|Win32
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Debug|x86.Build.0 = Debug|Win32
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Release|x64.ActiveCfg = Release|x64
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Release|x64.Build.0 = Release|x64
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Release|x86.ActiveCfg = Release|Win32
+		{91EDDC4B-C2D6-4CF4-968F-1CC059968F3E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

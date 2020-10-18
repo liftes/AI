@@ -159,8 +159,8 @@ int main() {
 	MapGet(map);
 	//设置Open表和Close表
 	int* open1, * close1;
-	open1 = (int*)malloc(100 * sizeof(int*));
-	close1 = (int*)malloc(100 * sizeof(int*));
+	open1 = (int*)malloc(1000 * sizeof(int*));
+	close1 = (int*)malloc(1000 * sizeof(int*));
 	open1[0] = 1;
 	open1[1] = 0;
 	close1[0] = 0;
